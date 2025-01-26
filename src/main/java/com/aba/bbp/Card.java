@@ -1,8 +1,23 @@
 package com.aba.bbp;
 
-public class Card {
-    public CardRanks rank;
-    public Suites suite;
+import com.aba.bbp.enums.CardRank;
+import com.aba.bbp.enums.Suite;
+
+public class Card implements Comparable<Card> {
+    public CardRank rank;
+    public Suite suite;
+
+    public Card() {
+    }
+
+    public Card(CardRank rank, Suite suite) {
+        this.rank = rank;
+        this.suite = suite;
+    }
+
+    public CardRank getRankOrdinal() {
+        return this.rank;
+    }
 
     @Override
     public String toString() {
@@ -22,9 +37,15 @@ public class Card {
             case DIAMONDS -> suiteSymbol = "♦";
             case CLUBS -> suiteSymbol = "♠";
             case SPADES -> suiteSymbol = "♣";
-            default -> throw new IllegalStateException("Unexpected suite: " + suite);
+            default ->
+                    throw new IllegalStateException("Unexpected suite: " + suite);
         }
 
         return rankSymbol + suiteSymbol;
+    }
+
+    @Override
+    public int compareTo(Card card) {
+        return rank.ordinal() - card.rank.ordinal();
     }
 }

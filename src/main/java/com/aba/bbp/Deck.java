@@ -1,5 +1,8 @@
 package com.aba.bbp;
 
+import com.aba.bbp.enums.CardRank;
+import com.aba.bbp.enums.Suite;
+
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -7,8 +10,8 @@ public class Deck {
     private final ArrayList<Card> cards = new ArrayList<>();
 
     public Deck() {
-        for(Suites suite : Suites.values()) {
-            for(CardRanks rank : CardRanks.values()) {
+        for (Suite suite : Suite.values()) {
+            for (CardRank rank : CardRank.values()) {
                 Card card = new Card();
                 card.rank = rank;
                 card.suite = suite;
