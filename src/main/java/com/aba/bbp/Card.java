@@ -2,6 +2,7 @@ package com.aba.bbp;
 
 import com.aba.bbp.enums.CardRank;
 import com.aba.bbp.enums.Suite;
+import javax.validation.constraints.NotNull;
 
 public class Card implements Comparable<Card> {
 
@@ -14,10 +15,6 @@ public class Card implements Comparable<Card> {
   public Card(CardRank rank, Suite suite) {
 	this.rank = rank;
 	this.suite = suite;
-  }
-
-  public CardRank getRankOrdinal() {
-	return this.rank;
   }
 
   @Override
@@ -45,7 +42,7 @@ public class Card implements Comparable<Card> {
   }
 
   @Override
-  public int compareTo(Card otherCard) {
+  public int compareTo(@NotNull Card otherCard) {
 	return rank.ordinal() - otherCard.rank.ordinal();
   }
 }

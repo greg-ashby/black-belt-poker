@@ -1,6 +1,7 @@
 package com.aba.bbp;
 
 import com.aba.bbp.enums.CardRank;
+import javax.validation.constraints.NotNull;
 
 public class CardSet implements Comparable<CardSet> {
 
@@ -13,7 +14,7 @@ public class CardSet implements Comparable<CardSet> {
   }
 
   @Override
-  public int compareTo(CardSet otherCardSet) {
+  public int compareTo(@NotNull CardSet otherCardSet) {
 	if (size == otherCardSet.size) {
 	  return rank.ordinal() - otherCardSet.rank.ordinal();
 	}

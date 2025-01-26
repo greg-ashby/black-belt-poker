@@ -15,10 +15,11 @@ public class Player {
 
   private final List<Card> cards = new ArrayList<>();
 
-  public void takeCard(Card card) {
+  public void takeCard(@NotNull Card card) {
 	cards.add(card);
   }
 
+  @NotNull
   public Hand calculateBestHand() {
 	cards.sort(Comparator.reverseOrder());
 	Hand hand = new Hand(HIGH_CARD, new ArrayList<>());
