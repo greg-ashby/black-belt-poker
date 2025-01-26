@@ -1,7 +1,10 @@
 package com.aba.bbp;
 
+import static com.aba.bbp.enums.HandRank.FOUR_OF_A_KIND;
+import static com.aba.bbp.enums.HandRank.FULL_HOUSE;
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
 import static com.aba.bbp.enums.HandRank.PAIR;
+import static com.aba.bbp.enums.HandRank.THREE_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.TWO_PAIR;
 
 import com.aba.bbp.enums.CardRank;
@@ -37,36 +40,49 @@ public class Player {
 	List<CardRank> kickers = new ArrayList<>();
 
 	switch (handRank) {
-	  case PAIR -> {
-		CardRank pairRank = cardSets.get(0).rank;
-		kickers.add(pairRank);
-		cards.stream().filter(card -> !card.rank.equals(pairRank)).limit(3)
-			.forEach(card -> kickers.add(card.rank));
-	  }
-	  case TWO_PAIR -> {
-		CardRank firstPair = cardSets.get(0).rank;
-		CardRank secondPair = cardSets.get(1).rank;
-		kickers.add(firstPair);
-		kickers.add(secondPair);
-		cards.stream()
-			.filter(card -> !card.rank.equals(firstPair))
-			.filter(card -> !card.rank.equals(secondPair))
-			.limit(1)
-			.forEach(card -> kickers.add(card.rank));
-	  }
-	  case HIGH_CARD -> cards.stream().limit(5).forEach(card -> kickers.add(card.rank));
+	  case PAIR -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 3);
+	  case TWO_PAIR -> setKickersInOrder(kickers,
+		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 1);
+	  case THREE_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 2);
+	  case FULL_HOUSE -> setKickersInOrder(kickers,
+		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 0);
+	  case FOUR_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 1);
+	  case HIGH_CARD -> setKickersInOrder(kickers, List.of(), 5);
 	}
 
 	return kickers;
   }
 
+  private void setKickersInOrder(List<CardRank> kickers, List<CardRank> firstRanks,
+	  int additionalRanksToAdd) {
+	kickers.addAll(firstRanks);
+	cards.stream().filter(card -> !firstRanks.contains(card.rank)).limit(additionalRanksToAdd)
+		.forEach(card -> kickers.add(card.rank));
+  }
+
   @NotNull
   private HandRank getBestHandRank(@NotNull List<CardSet> cardSets) {
 	if (!cardSets.isEmpty()) {
-	  if (cardSets.size() == 1 && cardSets.get(0).size == 2) {
-		return PAIR;
-	  } else if (cardSets.size() == 2 && cardSets.get(0).size == 2) {
-		return TWO_PAIR;
+	  if (cardSets.size() == 1) {
+		if (cardSets.get(0).size == 2) {
+		  return PAIR;
+		} else if (cardSets.get(0).size == 3) {
+		  return THREE_OF_A_KIND;
+		} else if (cardSets.get(0).size == 4) {
+		  return FOUR_OF_A_KIND;
+		} else {
+		  throw new IllegalStateException(
+			  "Hand has a single set but it is an illegal size of " + cardSets.get(0).size);
+		}
+	  } else if (cardSets.size() == 2) {
+		if (cardSets.get(0).size == 2) {
+		  return TWO_PAIR;
+		} else if (cardSets.get(0).size == 3) {
+		  return FULL_HOUSE;
+		} else {
+		  throw new IllegalStateException(
+			  "Hand has two sets but the first one is an illegal size of " + cardSets.get(0).size);
+		}
 	  }
 	}
 	return HIGH_CARD;
