@@ -2,50 +2,97 @@ package com.aba.bbp;
 
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
 import static com.aba.bbp.enums.HandRank.PAIR;
+import static com.aba.bbp.enums.HandRank.TWO_PAIR;
 
 import com.aba.bbp.enums.CardRank;
-import com.aba.bbp.enums.Suite;
+import com.aba.bbp.enums.HandRank;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.IntStream;
+import javax.validation.constraints.NotNull;
 
 public class Player {
 
   private final List<Card> cards = new ArrayList<>();
 
   public void takeCard(Card card) {
-    cards.add(card);
+	cards.add(card);
   }
 
   public Hand calculateBestHand() {
-    int[] setsIndex = new int[CardRank.values().length];
-    boolean[] runsIndex = new boolean[CardRank.values().length];
-    int[] suitesIndex = new int[Suite.values().length];
+	cards.sort(Comparator.reverseOrder());
+	Hand hand = new Hand(HIGH_CARD, new ArrayList<>());
 
-    for (Card card : cards) {
-      setsIndex[card.rank.ordinal()] += 1;
-      runsIndex[card.rank.ordinal()] = true;
-      suitesIndex[card.suite.ordinal()] += 1;
-    }
+	List<CardSet> cardSets = getCardSets(cards);
 
-    cards.sort(Comparator.reverseOrder());
-    Hand hand = new Hand(HIGH_CARD, new ArrayList<>());
+	hand.handRank = getBestHandRank(cardSets);
+	hand.kickers = getKickers(hand.handRank, cardSets);
 
-    int maxSetSize = Arrays.stream(setsIndex).max().orElse(-1);
-    if (maxSetSize == 2) {
-      hand.handRank = PAIR;
-      int pairOrdinal = IntStream.range(0, setsIndex.length)
-          .filter(i -> setsIndex[i] == maxSetSize).findFirst()
-          .orElse(-1);
-      CardRank pairRank = CardRank.values()[pairOrdinal];
-      hand.kickers.add(pairRank);
-      cards.stream().filter(card -> !card.rank.equals(pairRank)).limit(3)
-          .forEach(card -> hand.kickers.add(card.rank));
-    } else if (maxSetSize < 2) {
-      cards.stream().limit(5).forEach(card -> hand.kickers.add(card.rank));
-    }
-    return hand;
+	return hand;
+  }
+
+  @NotNull
+  private List<CardRank> getKickers(@NotNull HandRank handRank, @NotNull List<CardSet> cardSets) {
+	List<CardRank> kickers = new ArrayList<>();
+
+	switch (handRank) {
+	  case PAIR -> {
+		CardRank pairRank = cardSets.get(0).rank;
+		kickers.add(pairRank);
+		cards.stream().filter(card -> !card.rank.equals(pairRank)).limit(3)
+			.forEach(card -> kickers.add(card.rank));
+	  }
+	  case TWO_PAIR -> {
+		CardRank firstPair = cardSets.get(0).rank;
+		CardRank secondPair = cardSets.get(1).rank;
+		kickers.add(firstPair);
+		kickers.add(secondPair);
+		cards.stream()
+			.filter(card -> !card.rank.equals(firstPair))
+			.filter(card -> !card.rank.equals(secondPair))
+			.limit(1)
+			.forEach(card -> kickers.add(card.rank));
+	  }
+	  case HIGH_CARD -> cards.stream().limit(5).forEach(card -> kickers.add(card.rank));
+	}
+
+	return kickers;
+  }
+
+  @NotNull
+  private HandRank getBestHandRank(@NotNull List<CardSet> cardSets) {
+	if (!cardSets.isEmpty()) {
+	  if (cardSets.size() == 1 && cardSets.get(0).size == 2) {
+		return PAIR;
+	  } else if (cardSets.size() == 2 && cardSets.get(0).size == 2) {
+		return TWO_PAIR;
+	  }
+	}
+	return HIGH_CARD;
+  }
+
+  @NotNull
+  private List<CardSet> getCardSets(@NotNull List<Card> cards) {
+	Card previousCard = new Card();
+	CardSet currentSet = null;
+	List<CardSet> cardSets = new ArrayList<>();
+
+	for (Card currentCard : cards) {
+	  if (previousCard.rank == currentCard.rank) {
+		if (currentSet == null) {
+		  currentSet = new CardSet(currentCard.rank, 2);
+		  cardSets.add(currentSet);
+		} else {
+		  currentSet.size++;
+		}
+	  } else {
+		currentSet = null;
+	  }
+	  previousCard = currentCard;
+	}
+
+	cardSets.sort(Comparator.reverseOrder());
+	return cardSets;
   }
 }
+
