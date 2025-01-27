@@ -17,6 +17,10 @@ public class Card implements Comparable<Card> {
 	this.suite = suite;
   }
 
+  public CardRank getRank() {
+	return rank;
+  }
+
   @Override
   public String toString() {
 	String rankSymbol;

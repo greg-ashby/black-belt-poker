@@ -2,12 +2,18 @@ package com.aba.bbp;
 
 import static com.aba.bbp.enums.CardRank.ACE;
 import static com.aba.bbp.enums.CardRank.EIGHT;
+import static com.aba.bbp.enums.CardRank.FIVE;
 import static com.aba.bbp.enums.CardRank.FOUR;
+import static com.aba.bbp.enums.CardRank.JACK;
+import static com.aba.bbp.enums.CardRank.KING;
+import static com.aba.bbp.enums.CardRank.NINE;
 import static com.aba.bbp.enums.CardRank.QUEEN;
+import static com.aba.bbp.enums.CardRank.SEVEN;
 import static com.aba.bbp.enums.CardRank.SIX;
 import static com.aba.bbp.enums.CardRank.TEN;
 import static com.aba.bbp.enums.CardRank.THREE;
 import static com.aba.bbp.enums.CardRank.TWO;
+import static com.aba.bbp.enums.HandRank.FLUSH;
 import static com.aba.bbp.enums.HandRank.FOUR_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.FULL_HOUSE;
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
@@ -117,6 +123,19 @@ public class PlayerTest {
 			  ),
 			  FULL_HOUSE,
 			  Arrays.asList(SIX, TEN)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(KING, SPADES),
+				  new Card(JACK, CLUBS),
+				  new Card(NINE, CLUBS),
+				  new Card(SEVEN, CLUBS),
+				  new Card(FIVE, CLUBS),
+				  new Card(THREE, CLUBS),
+				  new Card(EIGHT, CLUBS)
+			  ),
+			  FLUSH,
+			  Arrays.asList(JACK, NINE, EIGHT, SEVEN, FIVE)
 		  }
 	  );
 	}
