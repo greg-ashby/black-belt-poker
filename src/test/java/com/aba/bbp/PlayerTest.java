@@ -18,6 +18,7 @@ import static com.aba.bbp.enums.HandRank.FOUR_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.FULL_HOUSE;
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
 import static com.aba.bbp.enums.HandRank.PAIR;
+import static com.aba.bbp.enums.HandRank.STRAIGHT;
 import static com.aba.bbp.enums.HandRank.THREE_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.TWO_PAIR;
 import static com.aba.bbp.enums.Suite.CLUBS;
@@ -100,16 +101,77 @@ public class PlayerTest {
 		  },
 		  new Object[]{
 			  Arrays.asList(
-				  new Card(SIX, SPADES),
-				  new Card(QUEEN, DIAMONDS),
-				  new Card(TEN, SPADES),
-				  new Card(SIX, CLUBS),
-				  new Card(SIX, HEARTS),
-				  new Card(FOUR, DIAMONDS),
-				  new Card(SIX, DIAMONDS)
+				  new Card(KING, SPADES),
+				  new Card(QUEEN, CLUBS),
+				  new Card(NINE, HEARTS),
+				  new Card(FIVE, DIAMONDS),
+				  new Card(JACK, DIAMONDS),
+				  new Card(TEN, CLUBS),
+				  new Card(EIGHT, CLUBS)
 			  ),
-			  FOUR_OF_A_KIND,
-			  Arrays.asList(SIX, QUEEN)
+			  STRAIGHT,
+			  Arrays.asList(KING)
+		  }, new Object[]{
+			  Arrays.asList(
+				  new Card(SIX, SPADES),
+				  new Card(QUEEN, CLUBS),
+				  new Card(THREE, HEARTS),
+				  new Card(FIVE, DIAMONDS),
+				  new Card(FOUR, DIAMONDS),
+				  new Card(TWO, CLUBS),
+				  new Card(EIGHT, CLUBS)
+			  ),
+			  STRAIGHT,
+			  Arrays.asList(SIX)
+		  }, new Object[]{
+			  Arrays.asList(
+				  new Card(NINE, SPADES),
+				  new Card(ACE, CLUBS),
+				  new Card(THREE, HEARTS),
+				  new Card(FIVE, DIAMONDS),
+				  new Card(FOUR, DIAMONDS),
+				  new Card(TWO, CLUBS),
+				  new Card(EIGHT, CLUBS)
+			  ),
+			  STRAIGHT,
+			  Arrays.asList(FIVE)
+		  }, new Object[]{
+			  Arrays.asList(
+				  new Card(ACE, SPADES),
+				  new Card(TEN, CLUBS),
+				  new Card(JACK, HEARTS),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(FOUR, DIAMONDS),
+				  new Card(TWO, CLUBS),
+				  new Card(KING, HEARTS)
+			  ),
+			  STRAIGHT,
+			  Arrays.asList(ACE)
+		  }, new Object[]{
+			  Arrays.asList(
+				  new Card(SIX, SPADES),
+				  new Card(TEN, CLUBS),
+				  new Card(NINE, HEARTS),
+				  new Card(FIVE, DIAMONDS),
+				  new Card(SEVEN, DIAMONDS),
+				  new Card(FOUR, CLUBS),
+				  new Card(EIGHT, CLUBS)
+			  ),
+			  STRAIGHT,
+			  Arrays.asList(TEN)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(KING, SPADES),
+				  new Card(JACK, CLUBS),
+				  new Card(NINE, CLUBS),
+				  new Card(SEVEN, CLUBS),
+				  new Card(FIVE, CLUBS),
+				  new Card(THREE, CLUBS),
+				  new Card(EIGHT, CLUBS)
+			  ),
+			  FLUSH,
+			  Arrays.asList(JACK, NINE, EIGHT, SEVEN, FIVE)
 		  },
 		  new Object[]{
 			  Arrays.asList(
@@ -126,17 +188,31 @@ public class PlayerTest {
 		  },
 		  new Object[]{
 			  Arrays.asList(
-				  new Card(KING, SPADES),
-				  new Card(JACK, CLUBS),
-				  new Card(NINE, CLUBS),
-				  new Card(SEVEN, CLUBS),
-				  new Card(FIVE, CLUBS),
-				  new Card(THREE, CLUBS),
-				  new Card(EIGHT, CLUBS)
+				  new Card(SIX, SPADES),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(TEN, SPADES),
+				  new Card(SIX, CLUBS),
+				  new Card(SIX, HEARTS),
+				  new Card(TEN, DIAMONDS),
+				  new Card(TEN, DIAMONDS)
 			  ),
-			  FLUSH,
-			  Arrays.asList(JACK, NINE, EIGHT, SEVEN, FIVE)
+			  FULL_HOUSE,
+			  Arrays.asList(TEN, SIX)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(SIX, SPADES),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(TEN, SPADES),
+				  new Card(SIX, CLUBS),
+				  new Card(SIX, HEARTS),
+				  new Card(FOUR, DIAMONDS),
+				  new Card(SIX, DIAMONDS)
+			  ),
+			  FOUR_OF_A_KIND,
+			  Arrays.asList(SIX, QUEEN)
 		  }
+		  // TODO straight flush, two straights with one flush
 	  );
 	}
 
