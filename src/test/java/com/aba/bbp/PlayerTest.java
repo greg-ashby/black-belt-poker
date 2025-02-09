@@ -19,6 +19,7 @@ import static com.aba.bbp.enums.HandRank.FULL_HOUSE;
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
 import static com.aba.bbp.enums.HandRank.PAIR;
 import static com.aba.bbp.enums.HandRank.STRAIGHT;
+import static com.aba.bbp.enums.HandRank.STRAIGHT_FLUSH;
 import static com.aba.bbp.enums.HandRank.THREE_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.TWO_PAIR;
 import static com.aba.bbp.enums.Suite.CLUBS;
@@ -40,7 +41,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class PlayerTest {
 
-  private Player player = new Player();
+  final private Player player = new Player();
 
   @Nested
   class CalculateBestHand {
@@ -110,7 +111,7 @@ public class PlayerTest {
 				  new Card(EIGHT, CLUBS)
 			  ),
 			  STRAIGHT,
-			  Arrays.asList(KING)
+			  List.of(KING)
 		  }, new Object[]{
 			  Arrays.asList(
 				  new Card(SIX, SPADES),
@@ -122,7 +123,7 @@ public class PlayerTest {
 				  new Card(EIGHT, CLUBS)
 			  ),
 			  STRAIGHT,
-			  Arrays.asList(SIX)
+			  List.of(SIX)
 		  }, new Object[]{
 			  Arrays.asList(
 				  new Card(NINE, SPADES),
@@ -134,7 +135,7 @@ public class PlayerTest {
 				  new Card(EIGHT, CLUBS)
 			  ),
 			  STRAIGHT,
-			  Arrays.asList(FIVE)
+			  List.of(FIVE)
 		  }, new Object[]{
 			  Arrays.asList(
 				  new Card(ACE, SPADES),
@@ -146,7 +147,7 @@ public class PlayerTest {
 				  new Card(KING, HEARTS)
 			  ),
 			  STRAIGHT,
-			  Arrays.asList(ACE)
+			  List.of(ACE)
 		  }, new Object[]{
 			  Arrays.asList(
 				  new Card(SIX, SPADES),
@@ -158,7 +159,7 @@ public class PlayerTest {
 				  new Card(EIGHT, CLUBS)
 			  ),
 			  STRAIGHT,
-			  Arrays.asList(TEN)
+			  List.of(TEN)
 		  },
 		  new Object[]{
 			  Arrays.asList(
@@ -184,7 +185,7 @@ public class PlayerTest {
 				  new Card(THREE, DIAMONDS)
 			  ),
 			  FULL_HOUSE,
-			  Arrays.asList(SIX, TEN)
+			  List.of(SIX, TEN)
 		  },
 		  new Object[]{
 			  Arrays.asList(
@@ -211,8 +212,46 @@ public class PlayerTest {
 			  ),
 			  FOUR_OF_A_KIND,
 			  Arrays.asList(SIX, QUEEN)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(NINE, SPADES),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(EIGHT, SPADES),
+				  new Card(SIX, SPADES),
+				  new Card(SEVEN, SPADES),
+				  new Card(FIVE, SPADES),
+				  new Card(TWO, DIAMONDS)
+			  ),
+			  STRAIGHT_FLUSH,
+			  List.of(NINE)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(ACE, SPADES),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(KING, SPADES),
+				  new Card(NINE, DIAMONDS),
+				  new Card(TEN, DIAMONDS),
+				  new Card(EIGHT, DIAMONDS),
+				  new Card(JACK, DIAMONDS)
+			  ),
+			  STRAIGHT_FLUSH,
+			  List.of(QUEEN)
+		  },
+		  new Object[]{
+			  Arrays.asList(
+				  new Card(TEN, SPADES),
+				  new Card(QUEEN, DIAMONDS),
+				  new Card(TEN, HEARTS),
+				  new Card(NINE, DIAMONDS),
+				  new Card(TEN, DIAMONDS),
+				  new Card(EIGHT, DIAMONDS),
+				  new Card(JACK, DIAMONDS)
+			  ),
+			  STRAIGHT_FLUSH,
+			  List.of(QUEEN)
 		  }
-		  // TODO straight flush, two straights with one flush
 	  );
 	}
 

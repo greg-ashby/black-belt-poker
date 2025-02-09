@@ -10,6 +10,7 @@ import static com.aba.bbp.enums.HandRank.FULL_HOUSE;
 import static com.aba.bbp.enums.HandRank.HIGH_CARD;
 import static com.aba.bbp.enums.HandRank.PAIR;
 import static com.aba.bbp.enums.HandRank.STRAIGHT;
+import static com.aba.bbp.enums.HandRank.STRAIGHT_FLUSH;
 import static com.aba.bbp.enums.HandRank.THREE_OF_A_KIND;
 import static com.aba.bbp.enums.HandRank.TWO_PAIR;
 
@@ -68,6 +69,7 @@ public class Player {
 	return cardRuns;
   }
 
+  @NotNull
   private Optional<Suite> findFlushSuite(List<Card> cards) {
 	int[] suites = new int[Suite.values().length];
 	for (Card card : cards) {
@@ -86,6 +88,7 @@ public class Player {
 	List<CardRank> kickers = new ArrayList<>();
 
 	switch (handRank) {
+	  case HIGH_CARD -> setKickersInOrder(kickers, List.of(), 5);
 	  case PAIR -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 3);
 	  case TWO_PAIR -> setKickersInOrder(kickers,
 		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 1);
@@ -96,8 +99,11 @@ public class Player {
 	  case FULL_HOUSE -> setKickersInOrder(kickers,
 		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 0);
 	  case FOUR_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 1);
-
-	  case HIGH_CARD -> setKickersInOrder(kickers, List.of(), 5);
+	  case STRAIGHT_FLUSH -> topRankOfEachStraight
+		  .stream()
+		  // TODO this is inefficient since it has to check the straight's a second time. Introduce a CardRun type that has topRank and isFlush
+		  .filter(cardRank -> getIfStraightFlush(cardRank, flushSuite.get()).isPresent())
+		  .findFirst().ifPresent(kickers::add);
 	}
 
 	return kickers;
@@ -112,12 +118,19 @@ public class Player {
 
   @NotNull
   private HandRank getBestHandRank(@NotNull List<CardSet> cardSets,
-	  List<CardRank> topRankOfEachStraight, Optional<Suite> flushSuite) {
+	  @NotNull List<CardRank> topRankOfEachStraight, @NotNull Optional<Suite> flushSuite) {
 	boolean hasSets = !cardSets.isEmpty();
 	boolean hasTwoSets = cardSets.size() == 2;
 	boolean hasFlush = flushSuite.isPresent();
 	boolean hasStraight = !topRankOfEachStraight.isEmpty();
 
+	if (hasStraight && hasFlush) {
+	  for (CardRank topRankOfStraight : topRankOfEachStraight) {
+		if (getIfStraightFlush(topRankOfStraight, flushSuite.get()).isPresent()) {
+		  return STRAIGHT_FLUSH;
+		}
+	  }
+	}
 	if (hasSets && cardSets.get(0).size == 4) {
 	  return FOUR_OF_A_KIND;
 	}
@@ -147,6 +160,24 @@ public class Player {
 	}
 
 	return HIGH_CARD;
+  }
+
+  @NotNull
+  private Optional<CardRank> getIfStraightFlush(CardRank topRankOfStraight, Suite suite) {
+	int count = 0;
+	int currentOrdinal = topRankOfStraight.ordinal();
+
+	for (Card card : cards) {
+	  if (card.rank.ordinal() == currentOrdinal && card.suite == suite) {
+		count++;
+		currentOrdinal -= 1;
+		if (count == 5) {
+		  return Optional.of(topRankOfStraight);
+		}
+	  }
+	}
+
+	return Optional.empty();
   }
 
   @NotNull
