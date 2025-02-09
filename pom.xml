@@ -16,8 +16,15 @@
       <groupId>javax.validation</groupId>
       <version>2.0.1.Final</version>
     </dependency>
+    <dependency>
+      <artifactId>lombok</artifactId>
+      <groupId>org.projectlombok</groupId>
+      <scope>provided</scope> <!-- You can use the latest version -->
+      <version>1.18.30</version>
+    </dependency>
+
   </dependencies>
-  
+
   <groupId>com.aba.bbp</groupId>
   <modelVersion>4.0.0</modelVersion>
 
