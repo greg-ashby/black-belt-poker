@@ -3,16 +3,15 @@ package com.aba.bbp;
 import com.aba.bbp.enums.CardRank;
 import com.aba.bbp.enums.HandRank;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
+@AllArgsConstructor
 public class Hand implements Comparable<Hand> {
 
-  public HandRank handRank;
-  public List<CardRank> kickers;
-
-  public Hand(HandRank handRank, List<CardRank> kickers) {
-	this.handRank = handRank;
-	this.kickers = kickers;
-  }
+  private HandRank handRank;
+  private List<CardRank> kickers;
 
   @Override
   public String toString() {

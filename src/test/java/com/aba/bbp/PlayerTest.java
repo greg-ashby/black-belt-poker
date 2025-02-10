@@ -266,8 +266,8 @@ public class PlayerTest {
 	  Hand actualHand = player.calculateBestHand();
 
 	  // Assert
-	  assertEquals(expectedHandRank, actualHand.handRank);
-	  assertIterableEquals(expectedKickers, actualHand.kickers);
+	  assertEquals(expectedHandRank, actualHand.getHandRank());
+	  assertIterableEquals(expectedKickers, actualHand.getKickers());
 	}
   }
 

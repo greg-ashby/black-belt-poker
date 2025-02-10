@@ -4,22 +4,7 @@ import com.aba.bbp.enums.CardRank;
 import com.aba.bbp.enums.Suite;
 import javax.validation.constraints.NotNull;
 
-public class Card implements Comparable<Card> {
-
-  public CardRank rank;
-  public Suite suite;
-
-  public Card() {
-  }
-
-  public Card(CardRank rank, Suite suite) {
-	this.rank = rank;
-	this.suite = suite;
-  }
-
-  public CardRank getRank() {
-	return rank;
-  }
+public record Card(@NotNull CardRank rank, @NotNull Suite suite) implements Comparable<Card> {
 
   @Override
   public String toString() {
@@ -33,13 +18,12 @@ public class Card implements Comparable<Card> {
 	  default -> rankSymbol = String.valueOf(rank.ordinal() + 2);
 	}
 
-	String suiteSymbol;
+	String suiteSymbol = null;
 	switch (suite) {
 	  case HEARTS -> suiteSymbol = "♥";
 	  case DIAMONDS -> suiteSymbol = "♦";
 	  case CLUBS -> suiteSymbol = "♠";
 	  case SPADES -> suiteSymbol = "♣";
-	  default -> throw new IllegalStateException("Unexpected suite: " + suite);
 	}
 
 	return rankSymbol + suiteSymbol;

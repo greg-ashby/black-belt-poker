@@ -34,30 +34,30 @@ public class Player {
   @NotNull
   public Hand calculateBestHand() {
 	cards.sort(Comparator.reverseOrder());
-	Hand hand = new Hand(HIGH_CARD, new ArrayList<>());
 
 	List<CardSet> cardSets = getCardSets(cards);
 	Optional<Suite> flushSuite = findFlushSuite(cards);
-	List<CardRun> cardRuns = getCardRuns(cards, flushSuite);
+	List<Straight> straights = getCardRuns(cards, flushSuite);
 
-	hand.handRank = getBestHandRank(cardSets, cardRuns, flushSuite);
-	hand.kickers = getKickers(hand.handRank, cardSets, cardRuns, flushSuite);
+	HandRank handRank = getBestHandRank(cardSets, straights, flushSuite);
+	List<CardRank> kickers = getKickers(handRank, cardSets, straights, flushSuite);
 
-	return hand;
+	return new Hand(handRank, kickers);
   }
 
   @NotNull
-  private List<CardRun> getCardRuns(List<Card> cards, Optional<Suite> flushSuite) {
-	List<CardRun> cardRuns = getTopRankOfEachStraight(cards).stream().map(CardRun::new).toList();
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private List<Straight> getCardRuns(List<Card> cards, Optional<Suite> flushSuite) {
+	List<Straight> straights = getTopRankOfEachStraight(cards).stream().map(Straight::new).toList();
 	if (flushSuite.isPresent()) {
 	  Suite flushSuiteValue = flushSuite.get();
-	  for (CardRun cardRun : cardRuns) {
-		if (isStraightFlush(cardRun.rank, flushSuiteValue)) {
-		  cardRun.isFlush = true;
+	  for (Straight straight : straights) {
+		if (isStraightFlush(straight.getRank(), flushSuiteValue)) {
+		  straight.setFlush(true);
 		}
 	  }
 	}
-	return cardRuns;
+	return straights;
   }
 
   private List<CardRank> getTopRankOfEachStraight(List<Card> cards) {
@@ -65,11 +65,11 @@ public class Player {
 
 	long rankIndexMask = 0;
 	for (Card card : cards) {
-	  rankIndexMask |= (1L << card.getRank().ordinal());
+	  rankIndexMask |= (1L << card.rank().ordinal());
 	}
 
 	for (int x = ACE.ordinal(); x >= SIX.ordinal(); x--) {
-	  long straightMask = (0x1F << x - 4);
+	  long straightMask = (0x1FL << x - 4);
 	  if ((rankIndexMask & straightMask) == straightMask) {
 		cardRuns.add(values()[x]);
 	  }
@@ -87,37 +87,45 @@ public class Player {
   private Optional<Suite> findFlushSuite(List<Card> cards) {
 	int[] suites = new int[Suite.values().length];
 	for (Card card : cards) {
-	  int index = card.suite.ordinal();
+	  int index = card.suite().ordinal();
 	  suites[index]++;
 	  if (suites[index] == 5) {
-		return Optional.of(card.suite);
+		return Optional.of(card.suite());
 	  }
 	}
 	return Optional.empty();
   }
 
   @NotNull
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private List<CardRank> getKickers(@NotNull HandRank handRank, @NotNull List<CardSet> cardSets,
-	  List<CardRun> cardRuns, Optional<Suite> flushSuite) {
+	  List<Straight> straights, Optional<Suite> flushSuite) {
 	List<CardRank> kickers = new ArrayList<>();
 
 	switch (handRank) {
 	  case HIGH_CARD -> setKickersInOrder(kickers, List.of(), 5);
-	  case PAIR -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 3);
+	  case PAIR -> setKickersInOrder(kickers, List.of(cardSets.get(0).getRank()), 3);
 	  case TWO_PAIR -> setKickersInOrder(kickers,
-		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 1);
-	  case THREE_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 2);
-	  case STRAIGHT -> kickers.add(cardRuns.get(0).rank);
-	  case FLUSH -> cards.stream().filter(card -> card.suite == flushSuite.get()).limit(5)
-		  .map(Card::getRank).forEach(kickers::add);
+		  List.of(cardSets.get(0).getRank(), cardSets.get(1).getRank()), 1);
+	  case THREE_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).getRank()), 2);
+	  case STRAIGHT -> kickers.add(straights.get(0).getRank());
+	  case FLUSH -> flushSuite.ifPresentOrElse(
+		  suite ->
+			  cards.stream().filter(card -> card.suite() == suite)
+				  .limit(5)
+				  .map(Card::rank)
+				  .forEach(kickers::add),
+		  () -> {
+			throw new RuntimeException("hand is not a flush");
+		  }
+	  );
 	  case FULL_HOUSE -> setKickersInOrder(kickers,
-		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 0);
-	  case FOUR_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 1);
-	  case STRAIGHT_FLUSH -> cardRuns.stream()
-		  .filter(CardRun::isFlush)
+		  List.of(cardSets.get(0).getRank(), cardSets.get(1).getRank()), 0);
+	  case FOUR_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).getRank()), 1);
+	  case STRAIGHT_FLUSH -> straights.stream()
+		  .filter(Straight::isFlush)
 		  .findFirst()
-		  .ifPresentOrElse(cardRun -> kickers.add(cardRun.rank),
-			  () -> new RuntimeException("No straight flush found"));
+		  .ifPresent(straight -> kickers.add(straight.getRank()));
 	}
 
 	return kickers;
@@ -126,29 +134,30 @@ public class Player {
   private void setKickersInOrder(List<CardRank> kickers, List<CardRank> firstRanks,
 	  int additionalRanksToAdd) {
 	kickers.addAll(firstRanks);
-	cards.stream().filter(card -> !firstRanks.contains(card.rank)).limit(additionalRanksToAdd)
-		.forEach(card -> kickers.add(card.rank));
+	cards.stream().filter(card -> !firstRanks.contains(card.rank())).limit(additionalRanksToAdd)
+		.forEach(card -> kickers.add(card.rank()));
   }
 
   @NotNull
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private HandRank getBestHandRank(@NotNull List<CardSet> cardSets,
-	  List<CardRun> cardRuns, @NotNull Optional<Suite> flushSuite) {
+	  List<Straight> straights, @NotNull Optional<Suite> flushSuite) {
 	boolean hasSets = !cardSets.isEmpty();
 	boolean hasTwoSets = cardSets.size() == 2;
 	boolean hasFlush = flushSuite.isPresent();
-	boolean hasStraight = !cardRuns.isEmpty();
+	boolean hasStraight = !straights.isEmpty();
 
 	if (hasStraight && hasFlush) {
-	  if (cardRuns.stream().filter(CardRun::isFlush).findFirst().isPresent()) {
+	  if (straights.stream().anyMatch(Straight::isFlush)) {
 		return STRAIGHT_FLUSH;
 	  }
 	}
 
-	if (hasSets && cardSets.get(0).size == 4) {
+	if (hasSets && cardSets.get(0).getSize() == 4) {
 	  return FOUR_OF_A_KIND;
 	}
 
-	if (hasTwoSets && cardSets.get(0).size == 3) {
+	if (hasTwoSets && cardSets.get(0).getSize() == 3) {
 	  return FULL_HOUSE;
 	}
 
@@ -160,7 +169,7 @@ public class Player {
 	  return STRAIGHT;
 	}
 
-	if (hasSets && cardSets.get(0).size == 3) {
+	if (hasSets && cardSets.get(0).getSize() == 3) {
 	  return THREE_OF_A_KIND;
 	}
 
@@ -181,7 +190,7 @@ public class Player {
 	int currentOrdinal = topRankOfStraight.ordinal();
 
 	for (Card card : cards) {
-	  if (card.rank.ordinal() == currentOrdinal && card.suite == suite) {
+	  if (card.rank().ordinal() == currentOrdinal && card.suite() == suite) {
 		count++;
 		currentOrdinal -= 1;
 		if (count == 5) {
@@ -195,17 +204,17 @@ public class Player {
 
   @NotNull
   private List<CardSet> getCardSets(@NotNull List<Card> cards) {
-	Card previousCard = new Card();
+	Card previousCard = cards.get(0);
 	CardSet currentSet = null;
 	List<CardSet> cardSets = new ArrayList<>();
 
-	for (Card currentCard : cards) {
-	  if (previousCard.rank == currentCard.rank) {
+	for (Card currentCard : cards.subList(1, cards.size())) {
+	  if (previousCard.rank() == currentCard.rank()) {
 		if (currentSet == null) {
-		  currentSet = new CardSet(currentCard.rank, 2);
+		  currentSet = new CardSet(currentCard.rank());
 		  cardSets.add(currentSet);
 		} else {
-		  currentSet.size++;
+		  currentSet.incrementSize();
 		}
 	  } else {
 		currentSet = null;

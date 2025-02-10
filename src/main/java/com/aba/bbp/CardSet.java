@@ -2,15 +2,21 @@ package com.aba.bbp;
 
 import com.aba.bbp.enums.CardRank;
 import javax.validation.constraints.NotNull;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@Getter
+@RequiredArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class CardSet implements Comparable<CardSet> {
 
-  public CardRank rank;
-  public int size;
+  private final CardRank rank;
+  private int size = 2;
 
-  public CardSet(CardRank rank, int size) {
-	this.rank = rank;
-	this.size = size;
+  public void incrementSize() {
+	this.size++;
   }
 
   @Override

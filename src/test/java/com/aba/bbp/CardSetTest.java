@@ -21,12 +21,11 @@ public class CardSetTest {
   class CompareTo {
 
 	private static Stream<Arguments> provideCardComparisons() {
-	  Stream<Arguments> argumentsStream = Stream.of(
-		  Arguments.of(new CardSet(SIX, 2), new CardSet(ACE, 2), -1),
-		  Arguments.of(new CardSet(QUEEN, 2), new CardSet(QUEEN, 2), 0),
-		  Arguments.of(new CardSet(KING, 2), new CardSet(JACK, 2), 1),
-		  Arguments.of(new CardSet(FIVE, 3), new CardSet(NINE, 2), 1));
-	  return argumentsStream;
+	  return Stream.of(
+		  Arguments.of(new CardSet(SIX), new CardSet(ACE), -1),
+		  Arguments.of(new CardSet(QUEEN), new CardSet(QUEEN), 0),
+		  Arguments.of(new CardSet(KING), new CardSet(JACK), 1),
+		  Arguments.of(new CardSet(FIVE, 3), new CardSet(NINE), 1));
 	}
 
 	@ParameterizedTest

@@ -101,6 +101,15 @@ class HandTest {
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
 					  CardRank.TEN)),
 			  0 // Both hands are equal
+		  ),
+		  // Kicker comparison JACK < QUEEN at index 2
+		  Arguments.of(
+			  new Hand(HandRank.HIGH_CARD,
+				  List.of(CardRank.ACE, CardRank.KING, CardRank.JACK, CardRank.TEN, CardRank.NINE)),
+			  new Hand(HandRank.HIGH_CARD,
+				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.TEN,
+					  CardRank.NINE)),
+			  -1
 		  )
 	  );
 	}
