@@ -37,13 +37,27 @@ public class Player {
 	Hand hand = new Hand(HIGH_CARD, new ArrayList<>());
 
 	List<CardSet> cardSets = getCardSets(cards);
-	List<CardRank> topRankOfEachStraight = getTopRankOfEachStraight(cards);
 	Optional<Suite> flushSuite = findFlushSuite(cards);
+	List<CardRun> cardRuns = getCardRuns(cards, flushSuite);
 
-	hand.handRank = getBestHandRank(cardSets, topRankOfEachStraight, flushSuite);
-	hand.kickers = getKickers(hand.handRank, cardSets, topRankOfEachStraight, flushSuite);
+	hand.handRank = getBestHandRank(cardSets, cardRuns, flushSuite);
+	hand.kickers = getKickers(hand.handRank, cardSets, cardRuns, flushSuite);
 
 	return hand;
+  }
+
+  @NotNull
+  private List<CardRun> getCardRuns(List<Card> cards, Optional<Suite> flushSuite) {
+	List<CardRun> cardRuns = getTopRankOfEachStraight(cards).stream().map(CardRun::new).toList();
+	if (flushSuite.isPresent()) {
+	  Suite flushSuiteValue = flushSuite.get();
+	  for (CardRun cardRun : cardRuns) {
+		if (isStraightFlush(cardRun.rank, flushSuiteValue)) {
+		  cardRun.isFlush = true;
+		}
+	  }
+	}
+	return cardRuns;
   }
 
   private List<CardRank> getTopRankOfEachStraight(List<Card> cards) {
@@ -84,7 +98,7 @@ public class Player {
 
   @NotNull
   private List<CardRank> getKickers(@NotNull HandRank handRank, @NotNull List<CardSet> cardSets,
-	  List<CardRank> topRankOfEachStraight, Optional<Suite> flushSuite) {
+	  List<CardRun> cardRuns, Optional<Suite> flushSuite) {
 	List<CardRank> kickers = new ArrayList<>();
 
 	switch (handRank) {
@@ -93,17 +107,17 @@ public class Player {
 	  case TWO_PAIR -> setKickersInOrder(kickers,
 		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 1);
 	  case THREE_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 2);
-	  case STRAIGHT -> kickers.add(topRankOfEachStraight.get(0));
+	  case STRAIGHT -> kickers.add(cardRuns.get(0).rank);
 	  case FLUSH -> cards.stream().filter(card -> card.suite == flushSuite.get()).limit(5)
 		  .map(Card::getRank).forEach(kickers::add);
 	  case FULL_HOUSE -> setKickersInOrder(kickers,
 		  List.of(cardSets.get(0).rank, cardSets.get(1).rank), 0);
 	  case FOUR_OF_A_KIND -> setKickersInOrder(kickers, List.of(cardSets.get(0).rank), 1);
-	  case STRAIGHT_FLUSH -> topRankOfEachStraight
-		  .stream()
-		  // TODO this is inefficient since it has to check the straight's a second time. Introduce a CardRun type that has topRank and isFlush
-		  .filter(cardRank -> getIfStraightFlush(cardRank, flushSuite.get()).isPresent())
-		  .findFirst().ifPresent(kickers::add);
+	  case STRAIGHT_FLUSH -> cardRuns.stream()
+		  .filter(CardRun::isFlush)
+		  .findFirst()
+		  .ifPresentOrElse(cardRun -> kickers.add(cardRun.rank),
+			  () -> new RuntimeException("No straight flush found"));
 	}
 
 	return kickers;
@@ -118,19 +132,18 @@ public class Player {
 
   @NotNull
   private HandRank getBestHandRank(@NotNull List<CardSet> cardSets,
-	  @NotNull List<CardRank> topRankOfEachStraight, @NotNull Optional<Suite> flushSuite) {
+	  List<CardRun> cardRuns, @NotNull Optional<Suite> flushSuite) {
 	boolean hasSets = !cardSets.isEmpty();
 	boolean hasTwoSets = cardSets.size() == 2;
 	boolean hasFlush = flushSuite.isPresent();
-	boolean hasStraight = !topRankOfEachStraight.isEmpty();
+	boolean hasStraight = !cardRuns.isEmpty();
 
 	if (hasStraight && hasFlush) {
-	  for (CardRank topRankOfStraight : topRankOfEachStraight) {
-		if (getIfStraightFlush(topRankOfStraight, flushSuite.get()).isPresent()) {
-		  return STRAIGHT_FLUSH;
-		}
+	  if (cardRuns.stream().filter(CardRun::isFlush).findFirst().isPresent()) {
+		return STRAIGHT_FLUSH;
 	  }
 	}
+
 	if (hasSets && cardSets.get(0).size == 4) {
 	  return FOUR_OF_A_KIND;
 	}
@@ -163,7 +176,7 @@ public class Player {
   }
 
   @NotNull
-  private Optional<CardRank> getIfStraightFlush(CardRank topRankOfStraight, Suite suite) {
+  private boolean isStraightFlush(CardRank topRankOfStraight, Suite suite) {
 	int count = 0;
 	int currentOrdinal = topRankOfStraight.ordinal();
 
@@ -172,12 +185,12 @@ public class Player {
 		count++;
 		currentOrdinal -= 1;
 		if (count == 5) {
-		  return Optional.of(topRankOfStraight);
+		  return true;
 		}
 	  }
 	}
 
-	return Optional.empty();
+	return false;
   }
 
   @NotNull
