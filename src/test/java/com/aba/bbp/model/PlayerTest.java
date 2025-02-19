@@ -1,4 +1,4 @@
-package com.aba.bbp;
+package com.aba.bbp.model;
 
 import static com.aba.bbp.enums.CardRank.ACE;
 import static com.aba.bbp.enums.CardRank.EIGHT;

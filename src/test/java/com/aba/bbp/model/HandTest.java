@@ -1,4 +1,4 @@
-package com.aba.bbp;
+package com.aba.bbp.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,17 +22,17 @@ class HandTest {
 		  Arguments.of(
 			  new Hand(HandRank.FLUSH,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.TEN)),
-			  new Hand(HandRank.STRAIGHT, List.of(CardRank.KING)),
+					  CardRank.TEN), List.of()),
+			  new Hand(HandRank.STRAIGHT, List.of(CardRank.KING), List.of()),
 			  // Straight is defined by its high card
 			  1 // Flush > Straight
 		  ),
 		  Arguments.of(
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.TEN)),
+					  CardRank.TEN), List.of()),
 			  new Hand(HandRank.PAIR,
-				  List.of(CardRank.TWO, CardRank.KING, CardRank.QUEEN, CardRank.JACK)),
+				  List.of(CardRank.TWO, CardRank.KING, CardRank.QUEEN, CardRank.JACK), List.of()),
 			  // Pair uses 4 kickers: pair rank + 3 high cards
 			  -1 // High Card < Pair
 		  ),
@@ -40,75 +40,80 @@ class HandTest {
 		  Arguments.of(
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.TEN)),
+					  CardRank.TEN), List.of()),
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.NINE)),
+					  CardRank.NINE), List.of()),
 			  1 // Ten kicker > Nine kicker
 		  ),
 		  // Pair comparison using 4 kickers
 		  Arguments.of(
 			  new Hand(HandRank.PAIR,
-				  List.of(CardRank.KING, CardRank.ACE, CardRank.QUEEN, CardRank.JACK)),
+				  List.of(CardRank.KING, CardRank.ACE, CardRank.QUEEN, CardRank.JACK), List.of()),
 			  new Hand(HandRank.PAIR,
-				  List.of(CardRank.KING, CardRank.ACE, CardRank.TEN, CardRank.NINE)),
+				  List.of(CardRank.KING, CardRank.ACE, CardRank.TEN, CardRank.NINE), List.of()),
 			  1 // Queen kicker > Ten kicker
 		  ),
 		  // Two Pair comparison using 3 kickers
 		  Arguments.of(
-			  new Hand(HandRank.TWO_PAIR, List.of(CardRank.KING, CardRank.TEN, CardRank.JACK)),
-			  new Hand(HandRank.TWO_PAIR, List.of(CardRank.KING, CardRank.TEN, CardRank.NINE)),
+			  new Hand(HandRank.TWO_PAIR, List.of(CardRank.KING, CardRank.TEN, CardRank.JACK),
+				  List.of()),
+			  new Hand(HandRank.TWO_PAIR, List.of(CardRank.KING, CardRank.TEN, CardRank.NINE),
+				  List.of()),
 			  1 // Jack kicker > Nine kicker
 		  ),
 		  // Trips comparison (only 1 kicker needed since ties are impossible)
 		  Arguments.of(
-			  new Hand(HandRank.THREE_OF_A_KIND, List.of(CardRank.KING)),
-			  new Hand(HandRank.THREE_OF_A_KIND, List.of(CardRank.QUEEN)),
+			  new Hand(HandRank.THREE_OF_A_KIND, List.of(CardRank.KING), List.of()),
+			  new Hand(HandRank.THREE_OF_A_KIND, List.of(CardRank.QUEEN), List.of()),
 			  1 // King trips > Queen trips
 		  ),
 		  // Straight comparison using 1 kicker
 		  Arguments.of(
-			  new Hand(HandRank.STRAIGHT, List.of(CardRank.ACE)), // Ace-high straight
-			  new Hand(HandRank.STRAIGHT, List.of(CardRank.KING)), // King-high straight
+			  new Hand(HandRank.STRAIGHT, List.of(CardRank.ACE), List.of()), // Ace-high straight
+			  new Hand(HandRank.STRAIGHT, List.of(CardRank.KING), List.of()), // King-high straight
 			  1 // Ace-high > King-high straight
 		  ),
 		  // Full House comparison using 2 kickers
 		  Arguments.of(
-			  new Hand(HandRank.FULL_HOUSE, List.of(CardRank.KING, CardRank.TEN)),
+			  new Hand(HandRank.FULL_HOUSE, List.of(CardRank.KING, CardRank.TEN), List.of()),
 			  // King-full-of-Tens
-			  new Hand(HandRank.FULL_HOUSE, List.of(CardRank.KING, CardRank.NINE)),
+			  new Hand(HandRank.FULL_HOUSE, List.of(CardRank.KING, CardRank.NINE), List.of()),
 			  // King-full-of-Nines
 			  1 // Tens kicker > Nines kicker
 		  ),
 		  // Quads comparison (only 1 kicker needed since ties are impossible)
 		  Arguments.of(
-			  new Hand(HandRank.FOUR_OF_A_KIND, List.of(CardRank.ACE)), // Four Aces
-			  new Hand(HandRank.FOUR_OF_A_KIND, List.of(CardRank.KING)), // Four Kings
+			  new Hand(HandRank.FOUR_OF_A_KIND, List.of(CardRank.ACE), List.of()), // Four Aces
+			  new Hand(HandRank.FOUR_OF_A_KIND, List.of(CardRank.KING), List.of()), // Four Kings
 			  1 // Four Aces > Four Kings
 		  ),
 		  // Straight Flush comparison (only 1 kicker needed since the rest are implied)
 		  Arguments.of(
-			  new Hand(HandRank.STRAIGHT_FLUSH, List.of(CardRank.ACE)), // Ace-high straight flush
-			  new Hand(HandRank.STRAIGHT_FLUSH, List.of(CardRank.KING)), // King-high straight flush
+			  new Hand(HandRank.STRAIGHT_FLUSH, List.of(CardRank.ACE), List.of()),
+			  // Ace-high straight flush
+			  new Hand(HandRank.STRAIGHT_FLUSH, List.of(CardRank.KING), List.of()),
+			  // King-high straight flush
 			  1 // Ace-high > King-high straight flush
 		  ),
 		  // Identical hands
 		  Arguments.of(
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.TEN)),
+					  CardRank.TEN), List.of()),
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.JACK,
-					  CardRank.TEN)),
+					  CardRank.TEN), List.of()),
 			  0 // Both hands are equal
 		  ),
 		  // Kicker comparison JACK < QUEEN at index 2
 		  Arguments.of(
 			  new Hand(HandRank.HIGH_CARD,
-				  List.of(CardRank.ACE, CardRank.KING, CardRank.JACK, CardRank.TEN, CardRank.NINE)),
+				  List.of(CardRank.ACE, CardRank.KING, CardRank.JACK, CardRank.TEN, CardRank.NINE),
+				  List.of()),
 			  new Hand(HandRank.HIGH_CARD,
 				  List.of(CardRank.ACE, CardRank.KING, CardRank.QUEEN, CardRank.TEN,
-					  CardRank.NINE)),
+					  CardRank.NINE), List.of()),
 			  -1
 		  )
 	  );

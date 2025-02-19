@@ -1,4 +1,4 @@
-package com.aba.bbp;
+package com.aba.bbp.model;
 
 import com.aba.bbp.enums.CardRank;
 import com.aba.bbp.enums.HandRank;
@@ -10,12 +10,37 @@ import lombok.Getter;
 @AllArgsConstructor
 public class Hand implements Comparable<Hand> {
 
-  private HandRank handRank;
-  private List<CardRank> kickers;
+  private final HandRank handRank;
+  private final List<CardRank> kickers;
+  private final List<Card> holeCards;
 
   @Override
   public String toString() {
 	return handRank.toString() + " " + kickers.toString();
+  }
+
+  public String getRankKey() {
+	String kickerCategory =
+		switch (kickers.get(0)) {
+		  case TWO, THREE, FOUR, FIVE, SIX -> kickerCategory = "1L";
+		  case SEVEN, EIGHT, NINE, TEN -> kickerCategory = "2M";
+		  case JACK, QUEEN, KING, ACE -> kickerCategory = "3H";
+		};
+	return handRank.toString() + "-" + kickerCategory;
+  }
+
+  public String getHoleKey() {
+	Card card1 = holeCards.get(0);
+	Card card2 = holeCards.get(1);
+
+	if (card1.compareTo(card2) < 0) {
+	  Card temp = card1;
+	  card1 = card2;
+	  card2 = temp;
+	}
+
+	return (card1.suite() == card2.suite() ? "S"
+		: "O") + card1.rank().toString() + card2.rank().toString();
   }
 
   @Override

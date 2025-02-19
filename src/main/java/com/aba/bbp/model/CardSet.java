@@ -1,4 +1,4 @@
-package com.aba.bbp;
+package com.aba.bbp.model;
 
 import com.aba.bbp.enums.CardRank;
 import javax.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package com.aba.bbp;
+package com.aba.bbp.model;
 
 import static com.aba.bbp.enums.CardRank.ACE;
 import static com.aba.bbp.enums.CardRank.FIVE;
@@ -25,9 +25,13 @@ import javax.validation.constraints.NotNull;
 
 public class Player {
 
+  private final List<Card> holeCards = new ArrayList<>();
   private final List<Card> cards = new ArrayList<>();
 
   public void takeCard(@NotNull Card card) {
+	if (holeCards.size() < 2) {
+	  holeCards.add(card);
+	}
 	cards.add(card);
   }
 
@@ -42,7 +46,7 @@ public class Player {
 	HandRank handRank = getBestHandRank(cardSets, straights, flushSuite);
 	List<CardRank> kickers = getKickers(handRank, cardSets, straights, flushSuite);
 
-	return new Hand(handRank, kickers);
+	return new Hand(handRank, kickers, holeCards);
   }
 
   @NotNull
@@ -224,6 +228,11 @@ public class Player {
 
 	cardSets.sort(Comparator.reverseOrder());
 	return cardSets;
+  }
+
+  public void reset() {
+	holeCards.clear();
+	cards.clear();
   }
 }
 
